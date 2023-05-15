@@ -4,8 +4,11 @@ import { HydratedDocument } from 'mongoose';
 
 export type BooksDocument = HydratedDocument<Books>;
 
-@Schema({ timestamps: true, collection: 'Books' })
+@Schema({ timestamps: true, collection: 'books' })
 export class Books {
+  @Prop({ required: true, unique: true })
+  bookId: string;
+
   @Prop({ required: true })
   title: string;
 

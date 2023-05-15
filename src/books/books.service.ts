@@ -3,6 +3,7 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { Books } from 'src/schema/books.schema';
+import * as randomize from 'randomatic';
 @Injectable()
 export class BooksService {
   constructor(
@@ -18,19 +19,33 @@ export class BooksService {
   }
 
   async getBookById(id: any) {
-    const singleBook = await this.booksModel.findById(id);
+    const singleBook = await this.booksModel.findOne({ bookId: id });
     if (!singleBook) {
       throw new NotFoundException('No Document Found!');
     }
     return singleBook;
   }
 
-  createNewBook(body: any) {
-    return this.booksModel.create(body);
+  async createNewBook(body: any) {
+    let bookId = "";
+    while (true) {
+      bookId = randomize('0', 12);
+      const duplicateBook = await this.booksModel.findOne({ bookId: bookId });
+      if (!duplicateBook) {
+        break;
+      }
+    }
+
+    const newBook = {
+      bookId,
+      ...body,
+    }
+
+    return this.booksModel.create(newBook);
   }
 
-  updateBookById(id: string, body: any) {
-    return this.booksModel.findByIdAndUpdate(id, body, {
+  async updateBookById(id: string, body: any) {
+    return await this.booksModel.findOneAndUpdate({ bookId: id }, body, {
       new: true,
       runValidators: true,
       strictQuery: 'throw',
